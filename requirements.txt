@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pillow
+numpy
+jinja2
+python-multipart
+
+transformers
+torch
+python-dotenv
+sentencepiece
+ultralytics
+opencv-python
+protobuf
+

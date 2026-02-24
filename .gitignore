@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[codz]
+*$py.class
+server.log
+debug*.log
+image_stats.duckdb
+venv/
+db/
+tmp/
+coverage/coverage-final.json
+node_modules/*
+coverage/*
+app/static/js/client/git_push.sh
+app/static/js/client/mocha.opts
+*.DS_Store
+gcp_key.json
+verify*.py
+test_*.log
+*.out
+.env
+*.db
+yolov8n.pt

@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dermatolog AI Scan</title>
+
+    <!-- Custom JS (Must load before Alpine) -->
+    <script defer src="/static/app.js?v=22"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <!-- Shoelace -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/themes/light.css" />
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/shoelace-autoloader.js"></script>
+
+
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --sl-font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --brand-primary: #10b981;
+            /* Clinical Green */
+            --brand-trust: #0f172a;
+            /* Deep Navy */
+            --bg-subtle: #f8fafc;
+        }
+
+        body {
+            font-family: var(--sl-font-sans);
+            background: linear-gradient(180deg, #ffffff 0%, var(--bg-subtle) 100%);
+            min-height: 100vh;
+            color: var(--brand-trust);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        /* Glassmorphism Effect */
+        .glass-overlay {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* Premium Card */
+        .card-premium {
+            border: 1px solid var(--sl-color-neutral-200);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            border-radius: var(--sl-border-radius-large);
+        }
+
+        .card-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07);
+            border-color: var(--sl-color-primary-200);
+        }
+
+        .card-premium.main-upload-card {
+            box-shadow: var(--sl-shadow-large);
+        }
+
+        .card-premium.main-upload-card:hover {
+            box-shadow: var(--sl-shadow-large);
+            transform: none;
+        }
+
+        .main-upload-card::part(body) {
+            padding: 0;
+            width: 100%;
+        }
+
+        /* Enhanced Upload Zone */
+        .upload-zone {
+            background: linear-gradient(135deg, var(--sl-color-primary-50) 0%, white 100%);
+            border: 2px dashed var(--sl-color-primary-300) !important;
+            border-radius: var(--sl-border-radius-large);
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--sl-color-primary-500) !important;
+            background: linear-gradient(135deg, var(--sl-color-primary-100) 0%, white 100%);
+        }
+
+        .timeline-container img {
+            transition: transform 0.3s ease;
+        }
+
+        .timeline-container .timeline-item:hover img {
+            transform: scale(1.02);
+        }
+
+        .analysis-card::part(base),
+        .timeline-item::part(base) {
+            box-shadow: var(--sl-shadow-large);
+            border: 2px solid var(--sl-color-neutral-200);
+            background-color: #ffffff;
+            /*transition: all 0.3s ease;*/
+        }
+
+        .interactive-result {
+            transition: all 0.3s ease;
+        }
+
+        .interactive-result:hover {
+            border-color: var(--sl-color-primary-300) !important;
+            box-shadow: var(--sl-shadow-large) !important;
+        }
+
+        .timeline-group::part(base) {
+            box-shadow: none;
+            background: transparent;
+            border: none;
+        }
+
+        .timeline-group::part(header) {
+            border-bottom: none;
+            padding: 0 0 1rem 0;
+        }
+
+        .timeline-group::part(body) {
+            padding: 0;
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 2.5rem;
+            padding-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0.75rem;
+            bottom: 2rem;
+            width: 2px;
+            background-color: var(--sl-color-primary-200);
+            z-index: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: calc(-2rem + 1px);
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: var(--sl-color-primary-600);
+            box-shadow: 0 0 0 5px var(--sl-color-primary-100), 0 0 12px rgba(13, 114, 255, 0.3);
+            z-index: 1;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 2.5rem;
+            right: 2.5rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--sl-color-primary-600);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            text-decoration: none;
+        }
+
+        .fab:hover {
+            background-color: var(--sl-color-primary-700);
+            transform: scale(1.15) rotate(10deg);
+            box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.5);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        .fab sl-icon {
+            font-size: 1.5rem;
+        }
+
+        #header {
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .analysis-history-container {
+            border-top: 1px solid var(--sl-color-neutral-100);
+            padding: 0 2rem 2rem 2rem;
+        }
+
+        .analysis-image-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            background: var(--sl-color-neutral-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--sl-border-radius-medium);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .analysis-layout {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            flex-wrap: nowrap;
+        }
+
+        .analysis-details-column {
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        @media (max-width: 600px) {
+
+
+            .container {
+                padding: 1.5rem 0;
+            }
+
+            #header {
+                margin-bottom: 1.5rem;
+            }
+
+            .analysis-layout {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .analysis-image-container {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1;
+            }
+
+            .card-premium.main-upload-card,
+            .card-premium.main-upload-card:hover {
+                border: none;
+                box-shadow: none;
+                border-radius: 0;
+                margin-bottom: 0 !important;
+            }
+
+            sl-card.timeline-group {
+                box-shadow: none;
+                border: none;
+            }
+
+            .card-premium.main-upload-card::part(base) {
+                border: none;
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .analysis-history-container {
+                border-top: none;
+                padding: 0;
+            }
+
+            .timeline-container {
+                border: none;
+                box-shadow: none;
+                padding-left: 0;
+            }
+
+            .timeline-container::before {
+                display: none;
+            }
+
+            .timeline-dot {
+                position: static;
+                transform: none;
+            }
+
+            .timeline-item,
+            .timeline-item::part(base) {
+                border: none;
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .fab {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                width: 54px;
+                height: 54px;
+            }
+        }
+    </style>
+</head>
+
+<body x-data="dermatologApp()">
+
+    <div class="container">
+
+        <!-- Header -->
+        <div id="header">
+            <div
+                style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <sl-icon name="activity" style="font-size: 2rem; color: var(--brand-primary);"></sl-icon>
+                <h1 style="margin: 0; font-weight: 700; letter-spacing: -0.025em; font-size: 1.75rem;">Dermatolog <span
+                        style="color: var(--sl-color-primary-600)">AI Scan</span></h1>
+            </div>
+            <p style="color: var(--sl-color-neutral-500); max-width: 500px; margin: 0 auto; line-height: 1.6;">
+                A privacy-first, free, and easy-to-use skin lesion scan app powered by latest AI models.
+            </p>
+        </div>
+
+        <!-- Drag & Drop Upload Zone (Clean) -->
+        <sl-card class="card-premium main-upload-card" style="margin-bottom: 1.5rem; overflow: hidden; width: 100%;">
+            <div class="upload-zone" @dragover.prevent="dragover = true" @dragleave.prevent="dragover = false"
+                @drop.prevent="handleDrop($event)" @click="$refs.fileInput.click()"
+                style="text-align: center; padding: 4rem 2rem 2rem 2rem; cursor: pointer;">
+
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
+                    <div
+                        style="background: white; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--sl-shadow-sm);">
+                        <sl-icon name="search" style="font-size: 2rem; color: var(--sl-color-primary-600);"></sl-icon>
+                    </div>
+
+                    <div>
+                        <h3 style="margin: 0 0 0.25rem 0; font-size: 1.25rem; font-weight: 600;">Secure Image Analysis
+                        </h3>
+                        <p style="color: var(--sl-color-neutral-500); font-size: 0.95rem; margin: 0;">
+                            Drag photos here or click to browse
+                        </p>
+                    </div>
+
+                    <div style="font-size: 0.75rem; color: var(--sl-color-neutral-400);">
+                        <sl-icon name="keyboard" style="vertical-align: middle;"></sl-icon> Press Ctrl+V to paste images
+                    </div>
+
+                    <!-- Action Buttons Inside Zone -->
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem;"
+                        @click.stop>
+                        <sl-button variant="primary" pill @click.stop="$refs.cameraInput.click()"
+                            style="min-width: 140px;">
+                            <sl-icon slot="prefix" name="camera"></sl-icon>
+                            Capture Image
+                        </sl-button>
+                        <sl-button pill @click.stop="$refs.fileInput.click()">
+                            <sl-icon slot="prefix" name="image"></sl-icon>
+                            Library
+                        </sl-button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Hidden Inputs -->
+            <input type="file" x-ref="fileInput" multiple accept="image/*" style="display: none;"
+                @change="handleFiles($event.target.files)" @click.stop>
+            <input type="file" x-ref="cameraInput" accept="image/*" capture="environment" style="display: none;"
+                @change="handleFiles($event.target.files)" @click.stop>
+
+            <!-- Analysis History Inside Card -->
+            <div class="analysis-history-container">
+                <!-- Timeline View -->
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; margin-bottom: 1rem;">
+                    <h3 x-show="timeline.length > 0" style="margin: 0; font-size: 1.1rem; font-weight: 600;">Analysis
+                        History</h3>
+                    <template x-if="timeline.length > 0">
+                        <sl-button variant="danger" outline pill size="small" @click="clearSession">
+                            <sl-icon slot="prefix" name="trash"></sl-icon>
+                            Clear History
+                        </sl-button>
+                    </template>
+                </div>
+
+                <template x-if="timeline.length === 0">
+                    <div style="text-align: center; padding: 4rem 0; color: var(--sl-color-neutral-400);">
+                        <sl-icon name="image" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></sl-icon>
+                        <div style="font-size: 1.1rem; font-weight: 500;">History Empty</div>
+                        <p style="font-size: 0.9rem; margin-top: 0.25rem;">Upload medical images to begin AI assessment.
+                        </p>
+                    </div>
+                </template>
+
+                <div class="timeline-container">
+                    <template x-for="item in timeline" :key="item.date">
+
+                        <!-- Virtual Directory (Group) -->
+                        <template x-if="item.type === 'directory'">
+                            <sl-card class="timeline-group">
+                                <div slot="header"
+                                    style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem; position: relative;">
+                                        <div class="timeline-dot"></div>
+                                        <strong x-text="item.date"
+                                            style="font-size: 1.15rem; color: var(--sl-color-neutral-800);"></strong>
+                                    </div>
+                                    <sl-badge variant="primary" pill
+                                        x-text="item.items.length === 1 ? '1 Photo' : item.items.length + ' Photos'"></sl-badge>
+                                </div>
+
+                                <!-- View Mode: Grid (Default) -->
+                                <template x-if="Object.keys(analysisResults).length === 0">
+                                    <div
+                                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.5rem;">
+                                        <template x-for="photo in item.items" :key="photo.id">
+                                            <div style="position: relative; cursor: pointer;"
+                                                :data-analyzed="!!analysisResults[photo.id]">
+                                                <img :src="photo.local_content || '/api/photos/' + photo.id + '/content'"
+                                                    style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--sl-border-radius-medium);"
+                                                    @click="openEditModal(photo)">
+
+                                                <!-- Processing Overlay -->
+                                                <template x-if="currentAnalysisId === photo.id">
+                                                    <div
+                                                        style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; border-radius: var(--sl-border-radius-medium);">
+                                                        <sl-spinner
+                                                            style="font-size: 2rem; --track-width: 4px; color: var(--sl-color-primary-600);"></sl-spinner>
+                                                    </div>
+                                                </template>
+
+                                                <!-- Waiting Overlay -->
+                                                <template
+                                                    x-if="loading && !analysisResults[photo.id] && currentAnalysisId !== photo.id">
+                                                    <div
+                                                        style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; border-radius: var(--sl-border-radius-medium);">
+                                                        <sl-icon name="hourglass-split"
+                                                            style="font-size: 2rem; opacity: 0.8;"></sl-icon>
+                                                    </div>
+                                                </template>
+
+                                                <!-- Primary Result Overlay -->
+                                                <template x-if="analysisResults[photo.id]">
+                                                    <div
+                                                        style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.85); color: white; padding: 2px; font-size: 0.6rem; text-align: center; border-bottom-left-radius: var(--sl-border-radius-medium); border-bottom-right-radius: var(--sl-border-radius-medium);">
+                                                        <div x-text="analysisResults[photo.id].interpretation ? analysisResults[photo.id].interpretation.annotation : analysisResults[photo.id].prediction.label"
+                                                            :style="'color: ' + (analysisResults[photo.id].interpretation ? getInterpretationColor(analysisResults[photo.id].interpretation.color_hint) : 'white')"
+                                                            style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">
+                                                        </div>
+                                                    </div>
+                                                </template>
+
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- View Mode: List (Analysis Mode) -->
+                                <template x-if="Object.keys(analysisResults).length > 0">
+                                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                        <template x-for="photo in item.items" :key="photo.id">
+                                            <sl-card class="analysis-card">
+                                                <div class="analysis-layout">
+
+                                                    <!-- Image Pair Container -->
+                                                    <div style="display: flex; gap: 1rem;">
+                                                        <!-- Original Image -->
+                                                        <div style="text-align: center;"
+                                                            :data-analyzed="!!analysisResults[photo.id]">
+                                                            <div class="analysis-image-container"
+                                                                @click="openEditModal(photo)">
+                                                                <img :src="photo.local_content || '/api/photos/' + photo.id + '/content'"
+                                                                    :alt="'Original Image: ' + photo.filename"
+                                                                    style="width: 100%; height: 100%; object-fit: contain;">
+
+                                                                <!-- Processing Overlay -->
+                                                                <template x-if="currentAnalysisId === photo.id">
+                                                                    <div
+                                                                        style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center;">
+                                                                        <sl-spinner
+                                                                            style="font-size: 3rem; --track-width: 6px; color: var(--sl-color-primary-600);"></sl-spinner>
+                                                                    </div>
+                                                                </template>
+
+                                                                <!-- Waiting Overlay -->
+                                                                <template
+                                                                    x-if="loading && !analysisResults[photo.id] && currentAnalysisId !== photo.id">
+                                                                    <div
+                                                                        style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white;">
+                                                                        <sl-icon name="hourglass-split"
+                                                                            style="font-size: 3rem; opacity: 0.8;"></sl-icon>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                            <div style="margin-top: 0.5rem; color: var(--sl-color-neutral-500); font-size: 0.8rem;"
+                                                                x-text="photo.filename"></div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Analysis Details -->
+                                                    <div class="analysis-details-column">
+                                                        <template x-if="analysisResults[photo.id]">
+                                                            <div
+                                                                style="display: flex; flex-direction: column; gap: 1rem;">
+                                                                <div
+                                                                    style="display: flex; flex-direction: column; gap: 1rem;">
+                                                                    <!-- Simplified Main Result -->
+                                                                    <div
+                                                                        :style="'padding: 1.5rem; border-radius: var(--sl-border-radius-large); background: white; transition: all 0.4s ease; box-shadow: var(--sl-shadow-large); border: 2px solid ' + (analysisResults[photo.id] && analysisResults[photo.id].interpretation ? getInterpretationColor(analysisResults[photo.id].interpretation.color_hint) : 'var(--sl-color-primary-300)')">
+                                                                        <div
+                                                                            style="display: flex; align-items: center; gap: 1rem;">
+                                                                            <div
+                                                                                :style="'width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ' + (analysisResults[photo.id] && analysisResults[photo.id].interpretation ? getInterpretationColor(analysisResults[photo.id].interpretation.color_hint) + '22' : 'var(--sl-color-primary-50)')">
+                                                                                <sl-icon
+                                                                                    :name="analysisResults[photo.id]?.interpretation ? getInterpretationIcon(analysisResults[photo.id].interpretation.color_hint) : 'activity'"
+                                                                                    :style="'font-size: 1.5rem; color: ' + (analysisResults[photo.id]?.interpretation ? getInterpretationColor(analysisResults[photo.id].interpretation.color_hint) : 'var(--sl-color-primary-600)')"></sl-icon>
+                                                                            </div>
+                                                                            <div>
+                                                                                <div
+                                                                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                                                                    <div
+                                                                                        style="font-size: 0.8rem; color: var(--sl-color-neutral-500); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
+                                                                                        AI Scan result
+                                                                                    </div>
+                                                                                </div>
+                                                                                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600;"
+                                                                                    :style="'color: ' + (analysisResults[photo.id] && analysisResults[photo.id].interpretation ? getInterpretationColor(analysisResults[photo.id].interpretation.color_hint) : 'var(--sl-color-neutral-900)')"
+                                                                                    x-text="analysisResults[photo.id].interpretation ? analysisResults[photo.id].interpretation.annotation : analysisResults[photo.id].prediction.label">
+                                                                                </h3>
+
+                                                                                <template
+                                                                                    x-if="analysisResults[photo.id] && analysisResults[photo.id].prediction && !analysisResults[photo.id].prediction.is_healthy">
+                                                                                    <div
+                                                                                        style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                                                                                        <span
+                                                                                            style="font-size: 0.9rem; font-weight: 600; color: var(--sl-color-neutral-600);">
+                                                                                            Top Classification: <span
+                                                                                                x-text="analysisResults[photo.id].prediction.label"
+                                                                                                style="color: var(--sl-color-neutral-900);"></span>
+                                                                                        </span>
+                                                                                        <span
+                                                                                            style="color: var(--sl-color-neutral-400); font-size: 0.8rem;"
+                                                                                            x-text="'(' + Math.round(analysisResults[photo.id].prediction.score * 100) + '%)'"></span>
+
+                                                                                        <template
+                                                                                            x-if="analysisResults[photo.id] && analysisResults[photo.id].interpretation">
+                                                                                            <sl-badge
+                                                                                                :variant="getBadgeVariant(analysisResults[photo.id].interpretation.confidence_color)"
+                                                                                                pill size="small"
+                                                                                                style="margin-left: 0.5rem;">
+                                                                                                <span
+                                                                                                    x-text="analysisResults[photo.id].interpretation.confidence_label"></span>
+                                                                                            </sl-badge>
+                                                                                        </template>
+                                                                                    </div>
+                                                                                </template>
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                    <!-- All Predictions Section (Always available if analyzed) -->
+                                                                    <sl-details class="interactive-result"
+                                                                        style="--border-width: 0; font-size: 0.8rem; margin-top: 0.5rem; border: 1px solid var(--sl-color-neutral-200); border-radius: var(--sl-border-radius-medium); overflow: hidden; background: var(--sl-color-neutral-50);">
+                                                                        <div slot="summary"
+                                                                            style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--sl-color-neutral-700);">
+                                                                            <sl-icon name="list-stars"></sl-icon>
+                                                                            Detailed Predictions & Confidences
+                                                                        </div>
+                                                                        <div
+                                                                            style="padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; background: var(--sl-color-neutral-50);">
+
+                                                                            <div
+                                                                                style="font-size: 0.7rem; text-transform: uppercase; color: var(--sl-color-neutral-500); letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                                                                                <span
+                                                                                    x-text="analysisResults[photo.id].primary_name || 'Primary Prediction'"></span>
+                                                                            </div>
+                                                                            <template
+                                                                                x-for="p in (analysisResults[photo.id].primary || [])"
+                                                                                :key="p.label">
+                                                                                <div
+                                                                                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sl-color-neutral-200); padding: 0.5rem 0;">
+                                                                                    <span x-text="p.label"
+                                                                                        style="color: var(--sl-color-neutral-800); font-weight: 500;"></span>
+                                                                                    <sl-badge
+                                                                                        :variant="p.score > 0.5 ? 'primary' : 'neutral'"
+                                                                                        size="small" pill
+                                                                                        x-text="(p.score * 100).toFixed(1) + '%'"></sl-badge>
+                                                                                </div>
+                                                                            </template>
+                                                                        </div>
+                                                                    </sl-details>
+
+                                                                    <!-- Saliency Map Toggle  -->
+                                                                    <sl-details class="interactive-result"
+                                                                        summary="View Saliency Map"
+                                                                        @sl-show="fetchSaliency(photo)"
+                                                                        style="--border-width: 0; --background-color: var(--sl-color-neutral-50); font-size: 0.8rem; border: 1px solid var(--sl-color-neutral-200); border-radius: var(--sl-border-radius-medium); margin-top: 0.5rem;">
+                                                                        <div style="padding: 0.5rem 0;">
+                                                                            <template
+                                                                                x-if="!analysisResults[photo.id].saliency_base64">
+                                                                                <div
+                                                                                    style="text-align: center; padding: 1rem;">
+                                                                                    <sl-spinner
+                                                                                        style="font-size: 1.5rem;"></sl-spinner>
+                                                                                    <div
+                                                                                        style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--sl-color-neutral-500);">
+                                                                                        Computing Grad-CAM Heatmap ...
+                                                                                    </div>
+                                                                                </div>
+                                                                            </template>
+                                                                            <template
+                                                                                x-if="analysisResults[photo.id].saliency_base64">
+                                                                                <div>
+                                                                                    <div
+                                                                                        style="position: relative; aspect-ratio: 1; background: var(--sl-color-neutral-100); border-radius: 4px; overflow: hidden;">
+                                                                                        <img :src="analysisResults[photo.id].saliency_base64.startsWith('data:') ? analysisResults[photo.id].saliency_base64 : 'data:image/jpeg;base64,' + analysisResults[photo.id].saliency_base64"
+                                                                                            style="width: 100%; height: 100%; object-fit: contain;"
+                                                                                            loading="lazy">
+                                                                                    </div>
+                                                                                    <p
+                                                                                        style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--sl-color-neutral-500); line-height: 1.4;">
+                                                                                        Red/orange areas indicate
+                                                                                        regions
+                                                                                        that
+                                                                                        most influenced
+                                                                                        the
+                                                                                        primary model's classification.
+                                                                                    </p>
+                                                                                </div>
+                                                                            </template>
+                                                                        </div>
+                                                                    </sl-details>
+
+                                                                    <div style="color: var(--sl-color-neutral-400); font-size: 0.75rem; margin-top: 0.5rem;"
+                                                                        x-text="'Scan executed on: ' + new Date(analysisResults[photo.id].date).toLocaleString()">
+                                                                    </div>
+                                                                </div>
+                                                        </template>
+
+                                                        <template x-if="!analysisResults[photo.id]">
+                                                            <div
+                                                                style="color: var(--sl-color-neutral-400); font-style: italic;">
+                                                                Pending analysis...
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </sl-card>
+                                        </template>
+                                    </div>
+                                </template>
+                            </sl-card>
+                        </template>
+
+                        <!-- Single Photo -->
+                        <template x-if="item.type === 'photo'">
+                            <sl-card class="card-premium timeline-item" style="margin-bottom: 1.5rem;"
+                                :data-analyzed="!!analysisResults[item.data.id]">
+                                <div style="display: flex; gap: 1.5rem; padding: 0.5rem;">
+                                    <!-- Evidence Display (Thumbnail + optional Saliency) -->
+                                    <div style="display: flex; gap: 0.75rem;">
+                                        <!-- Thumbnail -->
+                                        <div style="width: 130px; aspect-ratio: 1; cursor: pointer; position: relative; overflow: hidden; border-radius: var(--sl-border-radius-medium); border: 1px solid var(--sl-color-neutral-200);"
+                                            @click="openEditModal(item.data)">
+                                            <img :src="item.data.local_content || '/api/photos/' + item.data.id + '/content'"
+                                                style="width: 100%; height: 100%; object-fit: cover;">
+
+                                            <!-- Result Overlay (Glassmorphism) -->
+                                            <template x-if="analysisResults[item.data.id]">
+                                                <div class="glass-overlay"
+                                                    style="position: absolute; bottom: 0; left: 0; right: 0; color: white; padding: 6px; font-size: 0.7rem; text-align: center;">
+                                                    <div x-text="analysisResults[item.data.id].interpretation ? analysisResults[item.data.id].interpretation.annotation : analysisResults[item.data.id].prediction.label"
+                                                        :style="'color: ' + (analysisResults[item.data.id].interpretation ? getInterpretationColor(analysisResults[item.data.id].interpretation.color_hint) : 'white')"
+                                                        style="font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; letter-spacing: 0.02em;">
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <!-- Lazy Loaded Saliency Heatmap (Small compare view) -->
+                                        <template
+                                            x-if="analysisResults[item.data.id] && analysisResults[item.data.id].saliency_base64">
+                                            <div
+                                                style="width: 130px; aspect-ratio: 1; border-radius: var(--sl-border-radius-medium); border: 1px solid var(--sl-color-neutral-200); background: var(--sl-color-neutral-100); overflow: hidden;">
+                                                <img :src="analysisResults[item.data.id].saliency_base64.startsWith('data:') ? analysisResults[item.data.id].saliency_base64 : 'data:image/jpeg;base64,' + analysisResults[item.data.id].saliency_base64"
+                                                    style="width: 100%; height: 100%; object-fit: contain;">
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Diagnostic Info -->
+                                    <div
+                                        style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                                            <div style="width: 100%;">
+                                                <div
+                                                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                                    <span
+                                                        style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sl-color-neutral-400);"
+                                                        x-text="item.date"></span>
+                                                    <sl-badge variant="neutral" pill size="small"
+                                                        x-text="item.data.filename" style="opacity: 0.7;"></sl-badge>
+                                                </div>
+
+                                                <!-- Results List -->
+                                                <template x-if="analysisResults[item.data.id]">
+                                                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                                        <div
+                                                            :style="'display: flex; align-items: center; gap: 0.75rem; background: white; padding: 1rem; border-radius: var(--sl-border-radius-medium); box-shadow: var(--sl-shadow-medium); transition: all 0.4s ease; border: 2px solid ' + (analysisResults[item.data.id].interpretation ? getInterpretationColor(analysisResults[item.data.id].interpretation.color_hint) : 'var(--sl-color-primary-300)')">
+                                                            <div :style="'background: ' + (analysisResults[item.data.id].prediction.is_healthy ? 'var(--sl-color-success-100)' : 'var(--sl-color-primary-100)')"
+                                                                style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                                <sl-icon
+                                                                    :name="analysisResults[item.data.id].prediction.is_healthy ? 'check-lg' : 'activity'"
+                                                                    :style="'font-size: 1.25rem; color: ' + (analysisResults[item.data.id].prediction.is_healthy ? 'var(--sl-color-success-600)' : 'var(--sl-color-primary-600)')"></sl-icon>
+                                                            </div>
+
+                                                            <div style="flex-grow: 1;">
+                                                                <div
+                                                                    style="display: flex; align-items: center; gap: 0.5rem;">
+                                                                    <span style="font-weight: 700; font-size: 1.1rem;"
+                                                                        :style="'color: ' + (analysisResults[item.data.id].interpretation ? getInterpretationColor(analysisResults[item.data.id].interpretation.color_hint) : 'inherit')"
+                                                                        x-text="analysisResults[item.data.id].interpretation ? analysisResults[item.data.id].interpretation.annotation : analysisResults[item.data.id].prediction.label"></span>
+
+                                                                    <template
+                                                                        x-if="analysisResults[item.data.id].interpretation">
+                                                                        <sl-badge
+                                                                            :variant="analysisResults[item.data.id].interpretation.confidence_color === 'red' ? 'danger' : (analysisResults[item.data.id].interpretation.confidence_color === 'yellow' ? 'warning' : 'success')"
+                                                                            pill size="small"
+                                                                            x-text="analysisResults[item.data.id].interpretation.confidence_label"></sl-badge>
+                                                                    </template>
+                                                                </div>
+                                                                <div
+                                                                    style="font-size: 0.85rem; color: var(--sl-color-neutral-500); margin-top: 2px;">
+                                                                    <span
+                                                                        x-text="analysisResults[item.data.id].prediction.is_healthy ? 'No immediate concerns detected' : 'Inconclusive or requires review'"></span>
+                                                                    <span
+                                                                        x-text="' • Conf: ' + Math.round(analysisResults[item.data.id].prediction.score * 100) + '%'"></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- All Predictions Section (Always available if analyzed) -->
+                                                        <sl-details class="interactive-result"
+                                                            style="--border-width: 0; font-size: 0.8rem; margin-top: 0.5rem; border: 1px solid var(--sl-color-neutral-200); border-radius: var(--sl-border-radius-medium); overflow: hidden; background: var(--sl-color-neutral-50);">
+                                                            <div slot="summary"
+                                                                style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--sl-color-neutral-700);">
+                                                                <sl-icon name="list-stars"></sl-icon>
+                                                                Detailed Predictions & Confidences
+                                                            </div>
+                                                            <div
+                                                                style="padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; background: var(--sl-color-neutral-50);">
+
+                                                                <div
+                                                                    style="font-size: 0.7rem; text-transform: uppercase; color: var(--sl-color-neutral-500); letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                                                                    <span
+                                                                        x-text="analysisResults[item.data.id].primary_name || 'Primary Prediction'"></span>
+                                                                </div>
+                                                                <template
+                                                                    x-for="p in (analysisResults[item.data.id].primary || [])"
+                                                                    :key="p.label">
+                                                                    <div
+                                                                        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sl-color-neutral-200); padding: 0.5rem 0;">
+                                                                        <span x-text="p.label"
+                                                                            style="color: var(--sl-color-neutral-800); font-weight: 500;"></span>
+                                                                        <sl-badge
+                                                                            :variant="p.score > 0.5 ? 'primary' : 'neutral'"
+                                                                            size="small" pill
+                                                                            x-text="(p.score * 100).toFixed(1) + '%'"></sl-badge>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </sl-details>
+
+                                                        <!-- Saliency Map Toggle  -->
+                                                        <sl-details class="interactive-result"
+                                                            summary="View Grad-CAM Saliency Map"
+                                                            @sl-show="fetchSaliency(item.data)"
+                                                            style="--border-width: 0; --background-color: var(--sl-color-neutral-50); font-size: 0.8rem; border: 1px solid var(--sl-color-neutral-200); border-radius: var(--sl-border-radius-medium); margin-top: 0.5rem;">
+                                                            <div style="padding: 0.5rem 0;">
+                                                                <template
+                                                                    x-if="!analysisResults[item.data.id].saliency_base64">
+                                                                    <div style="text-align: center; padding: 1rem;">
+                                                                        <sl-spinner
+                                                                            style="font-size: 1.5rem;"></sl-spinner>
+                                                                        <div
+                                                                            style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--sl-color-neutral-500);">
+                                                                            Computing Grad-CAM Heatmap ...
+                                                                        </div>
+                                                                    </div>
+                                                                </template>
+                                                                <template
+                                                                    x-if="analysisResults[item.data.id].saliency_base64">
+                                                                    <div>
+                                                                        <div
+                                                                            style="position: relative; aspect-ratio: 1; background: var(--sl-color-neutral-100); border-radius: 4px; overflow: hidden;">
+                                                                            <img :src="analysisResults[item.data.id].saliency_base64.startsWith('data:') ? analysisResults[item.data.id].saliency_base64 : 'data:image/jpeg;base64,' + analysisResults[item.data.id].saliency_base64"
+                                                                                style="width: 100%; height: 100%; object-fit: contain;"
+                                                                                loading="lazy">
+                                                                        </div>
+                                                                        <p
+                                                                            style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--sl-color-neutral-500); line-height: 1.4;">
+                                                                            Red/orange areas indicate regions
+                                                                            that
+                                                                            most influenced
+                                                                            the
+                                                                            primary model's classification.
+                                                                        </p>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </sl-details>
+
+                                                        <div
+                                                            style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
+                                                            <sl-button size="small" pill outline
+                                                                @click="copyReport(item.data.id)">
+                                                                <sl-icon slot="prefix" name="clipboard"></sl-icon>
+                                                                Copy Summary
+                                                            </sl-button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+
+                                                <template x-if="!analysisResults[item.data.id]">
+                                                    <div
+                                                        style="display: flex; align-items: center; gap: 0.5rem; color: var(--sl-color-neutral-400); font-style: italic; padding: 1rem 0;">
+                                                        <sl-spinner style="font-size: 1rem;"></sl-spinner>
+                                                        <span>Running clinical analysis...</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </sl-card>
+                        </template>
+
+                    </template>
+                </div>
+            </div>
+        </sl-card>
+
+        <!-- Local Privacy Information -->
+        <div
+            style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 2.5rem; color: var(--sl-color-neutral-500); font-size: 0.85rem; padding: 0.5rem; background: var(--sl-color-neutral-50); border-radius: var(--sl-border-radius-medium);">
+            <sl-icon name="shield-check" style="color: var(--sl-color-success-600); font-size: 1.1rem;"></sl-icon>
+            <span>Privacy Mode: Images are stored locally on your device</span>
+        </div>
+
+
+
+
+
+        <!-- Error -->
+        <template x-if="error">
+            <sl-alert variant="danger" open style="margin-top: 1rem;">
+                <sl-icon slot="icon" name="exclamation-octagon"></sl-icon>
+                <strong x-text="error"></strong>
+            </sl-alert>
+        </template>
+
+        <!-- Edit Modal -->
+        <sl-dialog label="Edit Photo Date" class="edit-dialog">
+            <template x-if="editingPhoto">
+                <div>
+                    <img :src="editingPhoto.local_content || '/api/photos/' + editingPhoto.id + '/content'"
+                        style="width: 100%; max-height: 200px; object-fit: contain; margin-bottom: 1rem;">
+                    <sl-input type="date" label="Example Date" x-model="editingDate"></sl-input>
+                </div>
+            </template>
+            <div slot="footer" style="display: flex; justify-content: space-between;">
+                <sl-button variant="danger" outline @click="deletePhotoFromModal">
+                    <sl-icon slot="prefix" name="trash"></sl-icon> Delete
+                </sl-button>
+                <sl-button variant="primary" @click="saveDate">Save</sl-button>
+            </div>
+        </sl-dialog>
+
+        <!-- Floating Action Button -->
+        <button class="fab" @click="$refs.fileInput.click()" title="Upload Image">
+            <sl-icon name="plus-lg"></sl-icon>
+        </button>
+
+        <!-- Debug Toggle & Developer Data -->
+        <div
+            style="margin-top: 4rem; padding: 2rem 0; border-top: 1px solid var(--sl-color-neutral-200); margin-bottom: 2rem; text-align: center;">
+            <sl-switch :checked="debugMode" @sl-change="toggleDebug()">
+                <span style="font-size: 0.8rem; color: var(--sl-color-neutral-500);">Debug Mode</span>
+            </sl-switch>
+        </div>
+
+        <!-- Debug View: All Photos -->
+        <template x-if="debugMode">
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--sl-color-neutral-200);">
+                <h3
+                    style="color: var(--sl-color-neutral-500); font-size: 0.9rem; text-transform: uppercase; text-align: center; margin-bottom: 2rem;">
+                    Debug: All Images <span
+                        style="font-weight: normal; margin-left: 1rem; color: var(--sl-color-neutral-400);"
+                        x-text="'Session: ' + sessionId"></span>
+                    <span style="font-weight: normal; margin-left: 1rem; color: var(--sl-color-primary-500);"
+                        x-text="'Model: ' + modelName"></span>
+                    <span style="font-weight: normal; margin-left: 1rem;"
+                        :style="yoloAvailable ? 'color: var(--sl-color-success-600);' : 'color: var(--sl-color-danger-600);'"
+                        x-text="'YOLO: ' + (yoloAvailable ? 'Available' : 'Missing (Center Crop Fallback)')"></span>
+                </h3>
+
+                <!-- Debug Settings Section -->
+                <div
+                    style="margin-bottom: 1.5rem; display: flex; gap: 2rem; background: var(--sl-color-neutral-50); padding: 1rem; border-radius: var(--sl-border-radius-medium); border: 1px solid var(--sl-color-neutral-200);">
+                    <div style="text-align: left; max-width: 300px; flex: 1;">
+                        <div
+                            style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--sl-color-neutral-600); margin-bottom: 0.5rem;">
+                            <strong>Interpretation Margin</strong>
+                            <span style="font-weight: 600; color: var(--sl-color-warning-600)"
+                                x-text="(marginThreshold * 100).toFixed(0) + '%'"></span>
+                        </div>
+                        <sl-range min="0.01" max="0.20" step="0.01" :value="marginThreshold"
+                            @sl-input="marginThreshold = $event.target.value"></sl-range>
+                        <div style="font-size: 0.65rem; color: var(--sl-color-neutral-400); margin-top: 0.25rem;">
+                            Threshold for "Not Clear" mixed tumor/benign results. Move this to calibrate the sensitivity
+                            of
+                            warnings.
+                        </div>
+                    </div>
+                    <div
+                        style="flex: 2; font-size: 0.75rem; color: var(--sl-color-neutral-500); display: flex; align-items: center;">
+                        <sl-icon name="info-circle" style="margin-right: 0.5rem;"></sl-icon>
+                        <span>These settings are for development and calibration. They affect how the model results are
+                            interpreted into human-readable alerts.</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; margin-bottom: 2rem;">
+                    <template x-for="photo in getAllPhotos()" :key="photo.id">
+                        <div
+                            style="flex: 0 0 auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <!-- Raw Image -->
+                                <div style="text-align: center;">
+                                    <img :src="photo.local_content || '/api/photos/' + photo.id + '/content'"
+                                        style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid var(--sl-color-neutral-300);">
+                                    <div
+                                        style="font-size: 0.6rem; color: var(--sl-color-neutral-400); margin-top: 2px;">
+                                        Raw
+                                    </div>
+                                </div>
+
+                                <!-- Processed Image -->
+                                <template
+                                    x-if="analysisResults[photo.id] && analysisResults[photo.id].prepared_image_base64">
+                                    <div style="text-align: center;">
+                                        <img :src="analysisResults[photo.id].prepared_image_base64.startsWith('data:') ? analysisResults[photo.id].prepared_image_base64 : 'data:image/jpeg;base64,' + analysisResults[photo.id].prepared_image_base64"
+                                            style="width: 100px; height: 100px; object-fit: contain; background: var(--sl-color-neutral-100); border-radius: 4px; border: 2px solid var(--sl-color-primary-300);">
+                                        <div
+                                            style="font-size: 0.6rem; color: var(--sl-color-primary-500); margin-top: 2px; font-weight: bold;">
+                                            Target (448x448)</div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div style="font-size: 0.7rem; color: var(--sl-color-neutral-600); font-weight: 600;"
+                                x-text="photo.filename"></div>
+                            <div style="font-size: 0.6rem;"
+                                :style="analysisResults[photo.id] ? 'color: var(--sl-color-success-600);' : 'color: var(--sl-color-warning-600);'">
+                                <span
+                                    x-text="analysisResults[photo.id] ? 'Analysis Complete' : 'Pending Analysis'"></span>
+                            </div>
+
+                            <!-- Debug: Interpretation Logic -->
+                            <template x-if="analysisResults[photo.id] && analysisResults[photo.id].interpretation">
+                                <div
+                                    style="text-align: left; margin-top: 0.5rem; padding: 0.4rem; background: var(--sl-color-neutral-50); border-radius: 4px; border-left: 2px solid var(--sl-color-neutral-300); width: 100%;">
+                                    <div
+                                        style="font-size: 0.55rem; text-transform: uppercase; color: var(--sl-color-neutral-400); font-weight: bold; margin-bottom: 2px;">
+                                        Interp. Logic</div>
+                                    <template
+                                        x-for="step in analysisResults[photo.id].interpretation.computation_process">
+                                        <div
+                                            style="font-size: 0.55rem; color: var(--sl-color-neutral-500); font-family: var(--sl-font-mono); line-height: 1.2;">
+                                            » <span x-text="step"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Execution Times Table -->
+                <template x-if="Object.values(analysisResults).some(r => r.execution_times)">
+                    <div style="margin-top: 1rem; margin-bottom: 2rem;">
+                        <sl-card>
+                            <div slot="header" style="font-size: 0.85rem; font-weight: 600;">System Performance (ms)
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+                                <thead>
+                                    <tr style="text-align: left; border-bottom: 1px solid var(--sl-color-neutral-200);">
+                                        <th style="padding: 0.5rem;">Photo</th>
+                                        <th style="padding: 0.5rem;">Preprocess</th>
+                                        <th style="padding: 0.5rem;">Primary AI</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="photo in getAllPhotos()" :key="'time-' + photo.id">
+                                        <template
+                                            x-if="analysisResults[photo.id] && analysisResults[photo.id].execution_times">
+                                            <tr style="border-bottom: 1px solid var(--sl-color-neutral-100);">
+                                                <td style="padding: 0.5rem; color: var(--sl-color-neutral-500);"
+                                                    x-text="photo.filename"></td>
+                                                <td style="padding: 0.5rem;"
+                                                    x-text="analysisResults[photo.id].execution_times.image_preprocess || '-'">
+                                                </td>
+                                                <td style="padding: 0.5rem;"
+                                                    x-text="analysisResults[photo.id].execution_times.primary_medsiglip || '-'">
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </sl-card>
+                    </div>
+                </template>
+
+                <!-- Model Log Response -->
+                <template x-if="response">
+                    <div style="margin-bottom: 2rem;">
+                        <sl-card class="card-result">
+                            <div slot="header">
+                                <strong>Model Log Response</strong>
+                                <sl-badge pill variant="neutral" x-text="latency + ' ms'"></sl-badge>
+                            </div>
+                            <div style="white-space: pre-wrap; font-family: var(--sl-font-mono); font-size: 0.85rem;"
+                                x-text="response"></div>
+                        </sl-card>
+                    </div>
+                </template>
+
+                <!-- Technical Analysis (Debug Info) Section -->
+                <div style="border-top: 1px solid var(--sl-color-neutral-200); padding-top: 2rem; text-align: left;">
+                    <sl-details style="--border-width: 0; --background-color: transparent;">
+                        <span slot="summary"
+                            style="color: var(--sl-color-neutral-500); font-size: 0.9rem; text-transform: uppercase; font-weight: 600;">
+                            Detailed Inference Reports (Technical Analysis)
+                        </span>
+
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                            <template x-for="photo in getAllPhotos()" :key="'debug-' + photo.id">
+                                <template x-if="analysisResults[photo.id]">
+                                    <sl-card>
+                                        <div slot="header"
+                                            style="display: flex; justify-content: space-between; align-items: center;">
+                                            <strong x-text="photo.filename" style="font-size: 0.85rem;"></strong>
+                                            <sl-badge variant="neutral" pill
+                                                x-text="photo.id.substring(0,8)"></sl-badge>
+                                        </div>
+
+                                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                            <!-- Saliency Map Toggle -->
+                                            <sl-details summary="View Grad-CAM Saliency Map"
+                                                @sl-show="fetchSaliency(photo)"
+                                                style="--border-width: 0; --background-color: var(--sl-color-neutral-50); font-size: 0.8rem;">
+                                                <div style="padding: 0.5rem 0;">
+                                                    <template x-if="!analysisResults[photo.id].saliency_base64">
+                                                        <div style="text-align: center; padding: 1rem;">
+                                                            <sl-spinner style="font-size: 1.5rem;"></sl-spinner>
+                                                            <div
+                                                                style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--sl-color-neutral-500);">
+                                                                Computing Grad-CAM Heatmap (Lazy)...
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="analysisResults[photo.id].saliency_base64">
+                                                        <div>
+                                                            <div
+                                                                style="position: relative; aspect-ratio: 1; background: var(--sl-color-neutral-100); border-radius: 4px; overflow: hidden;">
+                                                                <img :src="analysisResults[photo.id].saliency_base64.startsWith('data:') ? analysisResults[photo.id].saliency_base64 : 'data:image/jpeg;base64,' + analysisResults[photo.id].saliency_base64"
+                                                                    style="width: 100%; height: 100%; object-fit: contain;"
+                                                                    loading="lazy">
+                                                            </div>
+                                                            <p
+                                                                style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--sl-color-neutral-500); line-height: 1.4;">
+                                                                Red/orange areas indicate regions that most
+                                                                influenced the primary model's classification.
+                                                            </p>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </sl-details>
+
+                                            <div
+                                                style="font-family: var(--sl-font-mono); font-size: 0.8rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                                                <!-- Primary Scores -->
+                                                <div
+                                                    style="padding: 0.75rem; border-radius: 4px; border: 1px solid var(--sl-color-primary-100); background: var(--sl-color-primary-50);">
+                                                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                        <template x-for="p in (analysisResults[photo.id].primary || [])"
+                                                            :key="p.label">
+                                                            <div
+                                                                style="display: flex; justify-content: space-between; align-items: center;">
+                                                                <span x-text="p.label"
+                                                                    style="color: var(--sl-color-neutral-700);"></span>
+                                                                <sl-badge
+                                                                    :variant="p.score > 0.5 ? 'primary' : 'neutral'"
+                                                                    size="small" pill
+                                                                    x-text="(p.score * 100).toFixed(1) + '%'"></sl-badge>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+
+                                                <div style="color: var(--sl-color-neutral-500); font-size: 0.7rem;">
+                                                    Execution: <span
+                                                        x-text="analysisResults[photo.id] ? new Date(analysisResults[photo.id].date).toLocaleTimeString() : ''"></span><br>
+                                                    Strategy: <span
+                                                        x-text="analysisResults[photo.id] && analysisResults[photo.id].preprocess_strategy ? analysisResults[photo.id].preprocess_strategy.strategy : ''"></span><br>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </sl-card>
+                                </template>
+                            </template>
+                        </div>
+                    </sl-details>
+                </div>
+            </div>
+        </template>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+{
+	"name": "Dermatolog AI Scanner Dev",
+	"build": {
+		"context": "..",
+		"dockerfile": "../Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-python.black-formatter",
+				"charliermarsh.ruff",
+				"tamasfe.even-better-toml"
+			]
+		}
+	},
+	"forwardPorts": [
+		8000
+	],
+	"postCreateCommand": "pip install -r requirements-dev.txt && playwright install --with-deps chromium && npm install",
+	"runArgs": [
+		"--env-file",
+		".env"
+	]
+}

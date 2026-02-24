@@ -1,0 +1,11 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: 
+  - 'build'
+  - '--build-arg'
+  - 'HF_TOKEN=$_HF_TOKEN'
+  - '-t'
+  - 'europe-west1-docker.pkg.dev/$PROJECT_ID/dermatolog-scan/medgemma-app'
+  - '.'
+images:
+- 'europe-west1-docker.pkg.dev/$PROJECT_ID/dermatolog-scan/medgemma-app'

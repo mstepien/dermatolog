@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Dermatolog AI Scan
+  description: AI application for dermatology analysis
+  version: 1.0.0
+paths:
+  /api/health:
+    get:
+      summary: Health check endpoint
+      operationId: health_check
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+components:
+  schemas:
+    HealthCheckResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        database:
+          type: string
+          title: Database
+        gcp_project:
+          type: string
+          title: Gcp Project
+      type: object
+      required:
+        - status
+        - database
+      title: HealthCheckResponse

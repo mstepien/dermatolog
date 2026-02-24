@@ -1,0 +1,8 @@
+-r requirements.txt
+pytest
+pytest-asyncio
+playwright
+httpx
+pytest-playwright
+ruff
+black
