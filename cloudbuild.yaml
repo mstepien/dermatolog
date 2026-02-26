@@ -5,7 +5,7 @@ steps:
   - '--build-arg'
   - 'HF_TOKEN=$_HF_TOKEN'
   - '-t'
-  - 'europe-west1-docker.pkg.dev/$PROJECT_ID/dermatolog-scan/medgemma-app'
+  - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/$_SERVICE_NAME'
   - '.'
 images:
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/dermatolog-scan/medgemma-app'
+- '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/$_SERVICE_NAME'

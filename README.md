@@ -17,7 +17,7 @@ A privacy-first, free, and easy-to-use dermatology scan app powered by latest AI
     - Classifies images against a comprehensive set of **25+ dermatological conditions** relevant to EU medical practices.
     - **Rationale**: The label set focuses on high-mortality cancers (Melanoma), high-prevalence conditions (Eczema, Acne), and common differential diagnoses to aid in effective triage.
 
-### 📊 Confidence & Interpretation Logic
+### Confidence & Interpretation Logic
 
 The application uses specialized logic to convert raw model scores into clinical insights:
 
@@ -32,7 +32,7 @@ The application uses specialized logic to convert raw model scores into clinical
 - **Predictive Entropy**: The system calculates Shannon Entropy across all predictions. If entropy is high (e.g., above 2.0 bits), the result is flagged as unreliable regardless of the top score.
 - **Interpretation Margin**: For mixed cases (Tumor vs. Non-Tumor), if the margin is below the configurable threshold (default 5%), the application flags the result as "Not clear" to prompt manual review.
 
-### 🩺 Supported Dermatological Conditions
+### Supported Dermatological Conditions
 
 The system is tuned to detect the following conditions based on EU referral guidelines and prevalence statistics:
 
@@ -44,7 +44,7 @@ The system is tuned to detect the following conditions based on EU referral guid
 | **Benign / Differential** | Melanocytic Nevus, Seborrheic Keratosis, Dermatofibroma, Haemangioma, Epidermoid Cyst, Lipoma | Crucial for distinguishing from malignant lesions to reduce unnecessary anxiety and referrals. |
 | **Other** | Vitiligo, Alopecia Areata, Melasma | Common pigmentary and hair disorders affecting psychological well-being. |
 
-## 🔒 Privacy & Security
+## Privacy & Security
 
 Dermatolog AI Scan is built with a **Privacy-First** architecture:
 
@@ -54,7 +54,7 @@ Dermatolog AI Scan is built with a **Privacy-First** architecture:
 4.  **Session Isolation**: Each user is assigned a unique, random session ID to isolate their requests and analysis cache.
 
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -62,7 +62,7 @@ Dermatolog AI Scan is built with a **Privacy-First** architecture:
 - **VS Code** with the **Dev Containers** extension.
 - **Node.js** (v18+) and **npm** (for frontend tests).
 
-### 🛠️ Development Setup
+### Development Setup
 
 The project is designed to be developed inside a **Dev Container**. This ensures a consistent environment with all dependencies pre-installed.
 
@@ -88,10 +88,13 @@ The project is designed to be developed inside a **Dev Container**. This ensures
     ```ini
     # GCP Project Configuration (for deployment)
     PROJECT_ID=your-gcp-project-id
-    LOCATION=us-central1
+    REGION=europe-west1
+    REPOSITORY=repo-name
+    SERVICE_NAME=app-name
 
-    # Optional: Temporary File Cleanup (seconds) - Default 86400 (24h)
-    TMP_MAX_AGE_SECONDS=86400
+    # --- Hardware (Optional Overrides) ---
+    MEMORY=8Gi
+    CPU=4
 
     # Optional: HuggingFace Token for Gated Models (Local MedSigLIP)
     HF_TOKEN=your_hf_token
@@ -112,11 +115,11 @@ The project is designed to be developed inside a **Dev Container**. This ensures
     Inside the integrated terminal of VS Code (running in the container):
     ```bash
     npm install  # If not run automatically
-    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
     ```
-    - The API will be available at: http://localhost:8000 (docs at http://localhost:8000/docs/)
-    - Frontend: http://localhost:8000/
-    - **Debug Mode**: Append `?debug` to the URL (e.g., http://localhost:8000/?debug) to reveal detailed model logs, execution timers, saliency maps, and preprocessing calibration settings.
+    - The API will be available at: http://localhost:8080 (docs at http://localhost:8080/docs/)
+    - Frontend: http://localhost:8080/
+    - **Debug Mode**: Append `?debug` to the URL (e.g., http://localhost:8080/?debug) to reveal detailed model logs, execution timers, saliency maps, and preprocessing calibration settings.
 
 ### 🐳 Running with Docker (Manual)
 
@@ -127,13 +130,13 @@ You MUST pass your `HF_TOKEN` as a build argument to download the gated model.
 ```bash
 # Load token from .env or export it matches your environment
 export HF_TOKEN=your_token_here
-docker build --build-arg HF_TOKEN=$HF_TOKEN -t dermatolog-ai-scan .
+docker build --build-arg HF_TOKEN=$HF_TOKEN -t medgemma-app .
 ```
 
 **2. Run the Container:**
 Pass the token as an environment variable for runtime checks (optional if baked in, but recommended).
 ```bash
-docker run -p 8000:8000 -e HF_TOKEN=$HF_TOKEN dermatolog-ai-scan
+docker run -p 8080:8080 -e HF_TOKEN=$HF_TOKEN medgemma-app
 ```
 
 ### 🧪 Running Tests

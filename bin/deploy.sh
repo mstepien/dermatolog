@@ -15,33 +15,41 @@ if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" == "your-project-id" ]; then
 fi
 
 GOOGLE_CLOUD_PROJECT=$PROJECT_ID
-SERVICE_NAME="dermatolog-ai-scan"
-REGION="us-central1"
-# We need enough memory for the model (MedSigLIP) to load.
-# 4GB is the absolute minimum, 8GB is safer.
-MEMORY="8Gi" 
-CPU="2"
+SERVICE_NAME="${SERVICE_NAME:-medgemma-app}"
+REGION="${REGION:-europe-west1}"
+REPOSITORY="${REPOSITORY:-dermatolog-scan}"
+
+# Hardware Configuration
+MEMORY="${MEMORY:-8Gi}" 
+CPU="${CPU:-4}"
 
 echo "========================================================"
 echo "   Deploying $SERVICE_NAME to Cloud Run ($REGION)"
 echo "   Mode: Self-Contained (Local Inference)"
 echo "========================================================"
 
-# 1. Build and Submit Container (Using Cloud Build to inject build args)
+# Image path in Artifact Registry
+IMAGE_PATH="$REGION-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/$REPOSITORY/$SERVICE_NAME"
+
+# 1. Build and Submit Container (Using Cloud Build)
 echo "[1/3] Building container image..."
-gcloud builds submit --config cloudbuild.yaml --substitutions=_HF_TOKEN="$HF_TOKEN",_SERVICE_NAME="$SERVICE_NAME" .
+gcloud builds submit --config cloudbuild.yaml \
+  --substitutions=_HF_TOKEN="$HF_TOKEN",_SERVICE_NAME="$SERVICE_NAME",_REPOSITORY="$REPOSITORY",_REGION="$REGION" .
 
 # 2. Deploy to Cloud Run
 echo "[2/3] Deploying to Cloud Run..."
 gcloud run deploy $SERVICE_NAME \
-  --image gcr.io/$GOOGLE_CLOUD_PROJECT/$SERVICE_NAME \
+  --image $IMAGE_PATH \
   --region $REGION \
   --platform managed \
   --allow-unauthenticated \
   --memory $MEMORY \
   --cpu $CPU \
+  --cpu-boost \
+  --max-instances 1 \
   --timeout 300 \
   --concurrency 10 \
+  --port 8080 \
   --set-env-vars="HF_TOKEN=$HF_TOKEN" 
   # Note: If HF_TOKEN is not set in your local shell, this will be empty.
   # The app handles missing token by falling back to public model.

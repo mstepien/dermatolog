@@ -5,12 +5,13 @@ This application is fully containerized and can be deployed to Google Cloud Run,
 ## Minimum Requirements
 
 - **RAM**: 4 GB (8 GB Recommended for MedSigLIP model)
-- **CPU**: 2 vCPU
+- **CPU**: 4 vCPU (Specifically for stable inference)
+- **Port**: 8080
 - **Dependencies**: Docker (for building the image)
 
 ---
 
-## 🚀 Google Cloud Run
+## Google Cloud Run
 
 We provide a helper script to deploy with the correct hardware configuration.
 
@@ -33,25 +34,48 @@ We provide a helper script to deploy with the correct hardware configuration.
         ```
 
     This script will:
-    - Build the container image.
-    - Deploy to Cloud Run with **8GB RAM** and **2 vCPUs**.
-    - Configure the fallback to public models if no gated token is provided.
+    - Build the container image using Google Cloud Build in **europe-west1**.
+    - Inject the **HF_TOKEN** to download the MedSigLIP model during the build phase.
+    - Deploy to Cloud Run with **8GB RAM**, **4 vCPUs**, and **Port 8080**.
+    - Enable **CPU Boost** for faster cold starts.
+    - Configure the runtime environment for local inference.
 
 4.  **Access**:
     The script will output the public URL of your application.
+
+### ⚙️ Script Environment Variables
+The `bin/deploy.sh` script is dynamic and can be configured via environment variables or your `.env` file:
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `PROJECT_ID` | **Required**. Your GCP Project ID. | - |
+| `HF_TOKEN` | **Required**. HuggingFace token for gated models. | - |
+| `SERVICE_NAME`| Cloud Run Service Name. | `medgemma-app` |
+| `REGION` | Deployment Region. | `europe-west1` |
+| `REPOSITORY` | Artifact Registry name. | `dermatolog-scan` |
+| `MEMORY` | Container RAM. | `8Gi` |
+| `CPU` | Container vCPUs. | `4` |
+
+*Note: The script automatically sources your local `.env` file if it exists.*
+
+### Updating the Application
+To push new code or changes to the models:
+1.  **Run the script again**: `./bin/deploy.sh`
+2.  **How it works**: Cloud Run will create a new "Revision". It automatically routes 100% of traffic to the new version once it's healthy.
+3.  **Speed**: Thanks to Docker layer caching in the `Dockerfile`, if you only change the application code (and not the dependencies or the model download step), the update build will be very fast.
 
 ### 🔧 Cloud Build Configuration (`cloudbuild.yaml`)
 
 The project includes a `cloudbuild.yaml` file, which is used by Google Cloud Build to execute the container build process. 
 
 **Why is it needed?**
-The standard `gcloud builds submit` command does not support passing build arguments (like `HF_TOKEN`) directly to the Dockerfile easily. The `cloudbuild.yaml` file explicitly defines the build steps to include the `--build-arg` flag, ensuring the gated MedSigLIP model can be downloaded securely during the build.
+Accessing the MedSigLIP model requires authentication. To keep the container self-contained and avoid downloading 4GB of data on every startup, the model is "baked" into the image during the build process. The `cloudbuild.yaml` file ensures the `--build-arg HF_TOKEN` is passed to Docker, allowing the build step to authenticate with HuggingFace.
 
 **Manual Usage:**
 If you need to trigger a build manually without `bin/deploy.sh`:
 ```bash
 gcloud builds submit --config cloudbuild.yaml \
-  --substitutions=_HF_TOKEN="$HF_TOKEN",_SERVICE_NAME="dermatolog-ai-scan" .
+  --substitutions=_HF_TOKEN="$HF_TOKEN",_SERVICE_NAME="medgemma-app",_REPOSITORY="dermatolog-scan",_REGION="europe-west1" .
 ```
 
 
@@ -64,9 +88,9 @@ You can deploy using **AWS App Runner** (easiest) or **Amazon ECS**.
     ```bash
     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
     
-    docker build -t dermatolog-ai-scan .
-    docker tag dermatolog-ai-scan:latest YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/dermatolog-ai-scan:latest
-    docker push YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/dermatolog-ai-scan:latest
+    docker build -t medgemma-app .
+    docker tag medgemma-app:latest YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/medgemma-app:latest
+    docker push YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/medgemma-app:latest
     ```
 
 2.  **Deploy via App Runner**:
@@ -75,12 +99,12 @@ You can deploy using **AWS App Runner** (easiest) or **Amazon ECS**.
     - **Configuration**:
         - **CPU**: 2 vCPU
         - **Memory**: 4 GB (Minimum) or higher.
-        - **Port**: 8000
-        - **Environment Variables**: Add `HF_TOKEN` if you have one.
+        - **Port**: 8080
+        - **Environment Variables**: Add `HF_TOKEN` if you are building the image from scratch (required for model download).
 
 ---
 
-## ☸️ Kubernetes (K8s)
+## Kubernetes (K8s)
 
 Deploy to any Kubernetes formatted cluster (EKS, GKE, K3s, Minikube).
 
@@ -111,7 +135,7 @@ spec:
             memory: "8Gi"
             cpu: "2000m"
         ports:
-        - containerPort: 8000
+        - containerPort: 8080
         env:
         # Optional: Add HF_TOKEN secret if using gated models
         # - name: HF_TOKEN
@@ -134,7 +158,7 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8000
+      targetPort: 8080
 ```
 
 **3. Apply Configuration**:
