@@ -4,6 +4,7 @@ function dermatologApp() {
         activeTab: 'photos',
         analysisResults: {},
         showTechnicalDetails: {}, // Map of photo_id -> boolean
+        disclaimerAccepted: false,
 
         // Chat State
         prompt: '',
@@ -32,6 +33,15 @@ function dermatologApp() {
             this.sessionId = this.getCookie('session_id');
             const urlParams = new URLSearchParams(window.location.search);
             this.debugMode = urlParams.has('debug');
+
+            // Check disclaimer status
+            this.disclaimerAccepted = localStorage.getItem('dermatolog_disclaimer_accepted') === 'true';
+            if (!this.disclaimerAccepted) {
+                setTimeout(() => {
+                    const dialog = document.querySelector('.disclaimer-dialog');
+                    if (dialog) dialog.show();
+                }, 500);
+            }
 
             this.loadTimeline();
             this.fetchModelInfo();
@@ -247,6 +257,12 @@ function dermatologApp() {
 
             // Optional: Tell backend to clear its session context if needed
             fetch('/api/photos', { method: 'DELETE' }).catch(console.error);
+        },
+
+        acceptDisclaimer() {
+            this.disclaimerAccepted = true;
+            localStorage.setItem('dermatolog_disclaimer_accepted', 'true');
+            document.querySelector('.disclaimer-dialog').hide();
         },
 
 
