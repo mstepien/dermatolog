@@ -26,16 +26,26 @@ def test_local_upload_and_analysis_flow(page, dummy_image, test_server):
     page.on("console", lambda msg: print(f"Browser Console: [{msg.type}] {msg.text}"))
     page.goto(test_server)
     
+    # Handle Medical Disclaimer
+    print("Checking for Medical Disclaimer...")
+    try:
+        disclaimer_btn = page.locator("sl-button", has_text="I Understand & Agree").first
+        disclaimer_btn.wait_for(state="visible", timeout=5000)
+        disclaimer_btn.click()
+        print("Disclaimer accepted.")
+    except:
+        print("Disclaimer not visible or already accepted, continuing...")
+    
     # 1. Clear any existing state
-    clear_btn = page.locator("sl-button", has_text="Clear All").first
+    clear_btn = page.locator("sl-button", has_text="Clear History").first
     if clear_btn.count() > 0:
         try:
             clear_btn.wait_for(state="visible", timeout=2000)
             page.once("dialog", lambda dialog: dialog.accept())
             clear_btn.click()
-            page.locator("text=No photos yet").wait_for(state="visible", timeout=5000)
+            page.locator("text=History Empty").wait_for(state="visible", timeout=5000)
         except:
-            print("Clear All button not visible or timed out, continuing...")
+            print("Clear History button not visible or timed out, continuing...")
 
     # 2. Trigger "Upload" (Local load)
     # We expect TO NOT see an /upload network call
@@ -63,16 +73,16 @@ def test_local_upload_and_analysis_flow(page, dummy_image, test_server):
     print(f"Analysis successful: {data['predictions'][0]['label']}")
 
     # 4. Verify results display in UI
-    # The 'Clinical Assessment' text should appear
-    print("Waiting for Clinical Assessment UI element...")
-    page.locator("text=Clinical Assessment").first.wait_for(state="visible", timeout=300000)
+    # The 'AI Scan result' text should appear
+    print("Waiting for AI Scan result UI element...")
+    page.locator("text=AI Scan result").first.wait_for(state="visible", timeout=300000)
     
     # Verify the label is visible
     label_text = data["predictions"][0]["label"]
     page.locator(f"text={label_text}").first.wait_for(state="visible", timeout=30000)
     
     # Verify Saliency Map toggle is present
-    saliency_toggle = page.locator("sl-details", has_text="View Grad-CAM Saliency Map").first
+    saliency_toggle = page.locator("sl-details", has_text="View Saliency Map").first
     saliency_toggle.wait_for(state="visible", timeout=10000)
     
     # 5. Trigger Lazy Saliency Load
@@ -99,12 +109,22 @@ def test_local_duplicate_handling(page, dummy_image, test_server):
     """Verifies that selecting the same file twice doesn't create duplicate timeline items."""
     page.goto(test_server)
     
+    # Handle Medical Disclaimer
+    print("Checking for Medical Disclaimer...")
+    try:
+        disclaimer_btn = page.locator("sl-button", has_text="I Understand & Agree").first
+        disclaimer_btn.wait_for(state="visible", timeout=5000)
+        disclaimer_btn.click()
+        print("Disclaimer accepted.")
+    except:
+        print("Disclaimer not visible or already accepted, continuing...")
+    
     # 1. Clear state
-    clear_btn = page.locator("sl-button", has_text="Clear All").first
+    clear_btn = page.locator("sl-button", has_text="Clear History").first
     if clear_btn.is_visible():
         page.once("dialog", lambda dialog: dialog.accept())
         clear_btn.click()
-        page.locator("text=No photos yet").wait_for(state="visible", timeout=5000)
+        page.locator("text=History Empty").wait_for(state="visible", timeout=5000)
 
     # 2. Load first time
     page.set_input_files("input[type='file']", dummy_image)

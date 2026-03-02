@@ -141,16 +141,33 @@ docker run -p 8080:8080 -e HF_TOKEN=$HF_TOKEN medgemma-app
 
 ### 🧪 Running Tests
 
-We use `pytest` for unit tests and `playwright` for end-to-end tests.
+We use `pytest` for Python tests and `Jest` for JavaScript unit tests.
 
 - **Unit Tests**:
+    Tests the core logic (image preprocessing, result interpretation, API endpoints) with external dependencies like AI models mocked for speed.
     ```bash
     pytest tests/unit
     ```
 
-- **Integration/E2E Tests**:
+- **YOLO Tests**:
+    Specifically tests the lesion detection and cropping logic.
     ```bash
-    pytest tests/e2e
+    pytest tests/yolo_tests
+    ```
+
+- **Running All Backend Tests**:
+    You can run the core logic and YOLO tests together:
+    ```bash
+    pytest tests/unit tests/yolo_tests
+    ```
+
+> **Note on YOLO State**: Currently, both unit and YOLO tests use **mocking** for the actual YOLOv8 inference. This allows the test suite to run in seconds without requiring model weights or high-performance hardware.
+
+- **Integration & E2E Tests**:
+    These tests interact with a live server and require `playwright` for browser automation.
+    ```bash
+    # Run UI and E2E tests
+    pytest tests/test_ui.py tests/test_e2e_local.py
     ```
 
 - **JavaScript Unit Tests**:

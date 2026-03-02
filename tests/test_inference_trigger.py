@@ -22,12 +22,22 @@ def test_inference_starts_on_upload(page, dummy_image, test_server):
     """
     page.goto(test_server)
     
+    # Handle Medical Disclaimer
+    print("Checking for Medical Disclaimer...")
+    try:
+        disclaimer_btn = page.locator("sl-button", has_text="I Understand & Agree").first
+        disclaimer_btn.wait_for(state="visible", timeout=5000)
+        disclaimer_btn.click()
+        print("Disclaimer accepted.")
+    except:
+        print("Disclaimer not visible or already accepted, continuing...")
+    
     # Clear session to ensure we are fresh
-    clear_btn = page.locator("sl-button", has_text="Clear All").first
+    clear_btn = page.locator("sl-button", has_text="Clear History").first
     if clear_btn.is_visible():
         page.once("dialog", lambda dialog: dialog.accept())
         clear_btn.click()
-        page.locator("text=No photos yet").wait_for(state="visible", timeout=5000)
+        page.locator("text=History Empty").wait_for(state="visible", timeout=5000)
 
     # We expect a POST to /api/photos/*/analyze
     # The app.js calls it after a 300ms timeout

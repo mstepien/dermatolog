@@ -26,6 +26,16 @@ def test_duplicate_upload_shows_warning_context(page, dummy_image, test_server):
     page.on("console", lambda msg: print(f"Browser Console: {msg.text}"))
     page.goto(test_server)
     
+    # Handle Medical Disclaimer
+    print("Checking for Medical Disclaimer...")
+    try:
+        disclaimer_btn = page.locator("sl-button", has_text="I Understand & Agree").first
+        disclaimer_btn.wait_for(state="visible", timeout=5000)
+        disclaimer_btn.click()
+        print("Disclaimer accepted.")
+    except:
+        print("Disclaimer not visible or already accepted, continuing...")
+    
     # Check if we need to clear previous state
     # We use a locator for the button
     clear_btn = page.locator("sl-button", has_text="Clear All").first
