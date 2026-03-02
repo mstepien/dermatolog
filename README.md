@@ -14,7 +14,7 @@ A privacy-first, free, and easy-to-use dermatology scan app powered by latest AI
     - **Privacy**: All data is scoped to your browser session.
 - **Zero-Shot Dermatology Analysis**:
     - Uses **Google Health's MedSigLIP** (`google/medsiglip-448`) model for localized analysis.
-    - Classifies images against a comprehensive set of **25+ dermatological conditions** relevant to EU medical practices.
+    - Classifies images against a focused set of **12 dermatological conditions** relevant to EU medical practices.
     - **Rationale**: The label set focuses on high-mortality cancers (Melanoma), high-prevalence conditions (Eczema, Acne), and common differential diagnoses to aid in effective triage.
 
 ### Confidence & Interpretation Logic
@@ -38,11 +38,11 @@ The system is tuned to detect the following conditions based on EU referral guid
 
 | Category | Conditions | Rationale |
 | :--- | :--- | :--- |
-| **Malignant / Pre-malignant** | Melanoma, Basal Cell Carcinoma (BCC), Squamous Cell Carcinoma (SCC), Actinic Keratosis, Bowen's Disease, Dysplastic Nevus | Priority for early detection due to mortality risk (Melanoma) or high prevalence impacting healthcare resources (BCC/SCC). |
-| **Inflammatory** | Psoriasis, Atopic Dermatitis (Eczema), Acne Vulgaris, Rosacea, Urticaria, Lichen Planus, Hidradenitis Suppurativa | Represents the highest burden of disease on quality of life in the EU population. |
-| **Infectious** | Fungal Infections (Tinea), Herpes Zoster (Shingles), Impetigo, Warts, Molluscum Contagiosum | Frequent reasons for primary care visits; contagious nature requires accurate identification. |
-| **Benign / Differential** | Melanocytic Nevus, Seborrheic Keratosis, Dermatofibroma, Haemangioma, Epidermoid Cyst, Lipoma | Crucial for distinguishing from malignant lesions to reduce unnecessary anxiety and referrals. |
-| **Other** | Vitiligo, Alopecia Areata, Melasma | Common pigmentary and hair disorders affecting psychological well-being. |
+| **Malignant / Pre-malignant** | Melanoma, Basal Cell Carcinoma (BCC) | Priority for early detection due to mortality risk (Melanoma) or high prevalence impacting healthcare resources (BCC). |
+| **Inflammatory** | Psoriasis, Atopic Dermatitis (Eczema), Acne Vulgaris, Rosacea | Represents the highest burden of disease on quality of life in the EU population. |
+| **Infectious** | Herpes Zoster (Shingles), Warts, Molluscum Contagiosum | Contagious nature requires accurate identification, often with distinct morphologies. |
+| **Benign / Differential** | Melanocytic Nevus, Seborrheic Keratosis | Crucial for distinguishing from malignant lesions to reduce unnecessary anxiety and referrals. |
+| **Baseline** | Normal Skin | Provides a control basis for healthy skin. |
 
 ## Privacy & Security
 
