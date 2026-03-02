@@ -110,10 +110,19 @@ The project is designed to be developed inside a **Dev Container**. This ensures
 5.  **Start Dev Container**:
     - Open the folder in VS Code.
     - When prompted, click **"Reopen in Container"** (or run standard command `Dev Containers: Reopen in Container`).
-    - VS Code will build the container and install all dependencies defined in `requirements-dev.txt` and `package.json`.
+- VS Code will build the container and install all dependencies defined in `requirements-dev.txt` and `package.json`.
+
+    **CLI Alternative:**
+    If you cannot find the "Rebuild" option in the UI, you can force a rebuild of the environment from your local terminal:
+    ```bash
+    # Ensure HF_TOKEN is exported for the build
+    export HF_TOKEN=$(cat .env | grep HF_TOKEN | cut -d'=' -f2)
+    docker compose up -d --build
+    ```
 
     Inside the integrated terminal of VS Code (running in the container):
     ```bash
+    source venv/bin/activate # If using a local virtual environment
     npm install  # If not run automatically
     uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
     ```

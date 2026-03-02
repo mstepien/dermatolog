@@ -6,6 +6,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
+    procps \
+    git \
     build-essential \
     libgl1 \
     libglib2.0-0 \

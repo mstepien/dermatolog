@@ -1,8 +1,11 @@
 {
 	"name": "Dermatolog AI Scanner Dev",
-	"build": {
-		"context": "..",
-		"dockerfile": "../Dockerfile"
+	"image": "medgemma_ic-medgemma-app:latest",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": "true",
+			"upgradePackages": "true"
+		}
 	},
 	"customizations": {
 		"vscode": {
@@ -15,7 +18,7 @@
 		}
 	},
 	"forwardPorts": [
-		8000
+		8080
 	],
 	"postCreateCommand": "pip install -r requirements-dev.txt && playwright install --with-deps chromium && npm install",
 	"runArgs": [
