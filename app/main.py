@@ -47,8 +47,14 @@ class SessionMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         
         if created_new:
-            # Set cookie for 1 day
-            response.set_cookie(key="session_id", value=session_id, max_age=86400)
+            # Set cookie for 1 day (SameSite=None, Secure=True for iframe embedding)
+            response.set_cookie(
+                key="session_id", 
+                value=session_id, 
+                max_age=86400,
+                samesite="none",
+                secure=True
+            )
             
         return response
 
