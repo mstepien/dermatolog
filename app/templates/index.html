@@ -7,7 +7,7 @@
     <title>Dermatolog AI Scan</title>
 
     <!-- Custom JS (Must load before Alpine) -->
-    <script defer src="/static/app.js?v=22"></script>
+    <script defer src="/static/app.js?v=23"></script>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -336,6 +336,8 @@
             <p style="color: var(--sl-color-neutral-500); max-width: 500px; margin: 0 auto; line-height: 1.6;">
                 A privacy-first, free, and easy-to-use skin lesion scan app powered by latest AI models.
             </p>
+
+
         </div>
 
         <!-- Drag & Drop Upload Zone (Clean) -->
@@ -373,6 +375,10 @@
                         <sl-button pill @click.stop="$refs.fileInput.click()">
                             <sl-icon slot="prefix" name="image"></sl-icon>
                             Library
+                        </sl-button>
+                        <sl-button pill variant="default" @click.stop="loadDemoData()" :loading="loadingDemo">
+                            <sl-icon slot="prefix" name="cloud-arrow-down"></sl-icon>
+                            Demo Data
                         </sl-button>
                     </div>
                 </div>
@@ -648,10 +654,11 @@
                                                                             </template>
                                                                         </div>
                                                                     </sl-details>
-
+                                                                    <!-- 
                                                                     <div style="color: var(--sl-color-neutral-400); font-size: 0.75rem; margin-top: 0.5rem;"
                                                                         x-text="'Scan executed on: ' + new Date(analysisResults[photo.id].date).toLocaleString()">
                                                                     </div>
+                                                                    -->
                                                                 </div>
                                                         </template>
 

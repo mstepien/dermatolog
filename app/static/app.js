@@ -10,6 +10,7 @@ function dermatologApp() {
         prompt: '',
         temperature: 0.2,
         loading: false,
+        loadingDemo: false,
         response: null,
         latency: null,
         sessionId: null,
@@ -120,6 +121,48 @@ function dermatologApp() {
                 }
             } catch (e) {
                 console.error("Timeline load failed", e);
+            }
+        },
+
+        async loadDemoData() {
+            if (this.loadingDemo) return;
+            this.loadingDemo = true;
+            try {
+                const metadataRes = await fetch('/api/demo-data');
+                if (!metadataRes.ok) throw new Error("Failed to fetch demo metadata");
+                const demoItems = await metadataRes.json();
+
+                const files = [];
+                for (const item of demoItems) {
+                    try {
+                        if (!item.base64_data) continue;
+
+                        // Convert base64 to Blob
+                        const byteCharacters = atob(item.base64_data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: item.mime_type });
+
+                        const filename = item.filename || 'demo_image.jpg';
+                        files.push(new File([blob], filename, { type: blob.type }));
+                    } catch (err) {
+                        console.error("Error creating demo image:", item.filename, err);
+                    }
+                }
+
+                if (files.length > 0) {
+                    await this.handleFiles(files);
+                    this.showToast("Demo Data Loaded", `Successfully loaded ${files.length} demo images.`, "success", "info-circle");
+                } else {
+                    this.showToast("Demo Data Failed", "Could not load any demo images.", "danger", "exclamation-triangle");
+                }
+            } catch (err) {
+                console.error("Critical error loading demo data", err);
+            } finally {
+                this.loadingDemo = false;
             }
         },
 
