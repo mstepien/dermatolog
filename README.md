@@ -1,6 +1,17 @@
 # Dermatolog AI Scan
 
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-blue)](https://huggingface.co/spaces/mstepien/Dermatolog-AI-Scan) [![Blog Post](https://img.shields.io/badge/Blog_Post-smart.biz.pl-blue)](https://www.smart.biz.pl/techblog/app-dermatolog-ai-scan) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Model: MedSigLIP](https://img.shields.io/badge/Model-MedSigLIP-green)](https://huggingface.co/google/medsiglip-448)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Alpine.js](https://img.shields.io/badge/Alpine.js-8BC0D0?style=flat&logo=alpine.js&logoColor=white)](https://alpinejs.dev/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+
 A privacy-first, free, and easy-to-use dermatology scan app powered by latest AI models.
+
+## Live Demo
+
+- 🌐 [Live Demo (Hugging Face)](https://huggingface.co/spaces/mstepien/Dermatolog-AI-Scan)
+- 📖 [Blog](https://www.smart.biz.pl/techblog/app-dermatolog-ai-scan)
+
 
 ## Features
 
@@ -16,6 +27,9 @@ A privacy-first, free, and easy-to-use dermatology scan app powered by latest AI
     - Uses **Google Health's MedSigLIP** (`google/medsiglip-448`) model for localized analysis.
     - Classifies images against a focused set of **12 dermatological conditions** relevant to EU medical practices.
     - **Rationale**: The label set focuses on high-mortality cancers (Melanoma), high-prevalence conditions (Eczema, Acne), and common differential diagnoses to aid in effective triage.
+- **Explainable AI**:
+    - Generates **Grad-CAM heatmaps (Saliency Maps)** to visually indicate the specific areas of an image the AI focused on when making a prediction.
+
 
 ### Confidence & Interpretation Logic
 
@@ -52,7 +66,6 @@ Dermatolog AI Scan is built with a **Privacy-First** architecture:
 2.  **No Server-Side Persistence**: The backend receives the image data only for the duration of the analysis request. It process the image in-memory and returns the results. No temporary or permanent image files are created on the server's filesystem.
 3.  **Local Memory State**: Image data is pinned to the JavaScript state of your current browser tab. Refreshing the page or closing the tab clears the local image memory.
 4.  **Session Isolation**: Each user is assigned a unique, random session ID to isolate their requests and analysis cache.
-
 
 ## Getting Started
 
@@ -130,7 +143,7 @@ The project is designed to be developed inside a **Dev Container**. This ensures
     - Frontend: http://localhost:8080/
     - **Debug Mode**: Append `?debug` to the URL (e.g., http://localhost:8080/?debug) to reveal detailed model logs, execution timers, saliency maps, and preprocessing calibration settings.
 
-### 🐳 Running with Docker (Manual)
+### Running with Docker (Manual)
 
 If you prefer to run the container manually (outside VS Code):
 
@@ -148,7 +161,7 @@ Pass the token as an environment variable for runtime checks (optional if baked 
 docker run -p 8080:8080 -e HF_TOKEN=$HF_TOKEN medgemma-app
 ```
 
-### 🧪 Running Tests
+### Running Tests
 
 We use `pytest` for Python tests and `Jest` for JavaScript unit tests.
 
@@ -183,6 +196,13 @@ We use `pytest` for Python tests and `Jest` for JavaScript unit tests.
     ```bash
     npm test
     ```
+## API Documentation
+
+Since the application is built on **FastAPI**, it automatically provides an interactive API documentation interface. 
+
+Once the server is running, simply navigate to the following URL in your browser to explore the API, view schemas, and test endpoints directly:
+- **Swagger UI**: [http://localhost:8080/docs](http://localhost:8080/docs)
+- **OpenAPI JSON**: [http://localhost:8080/openapi.json](http://localhost:8080/openapi.json)
 
 ## Legal & Regulatory Status
 
