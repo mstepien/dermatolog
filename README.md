@@ -1,6 +1,6 @@
 # Dermatolog AI Scan
 
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-blue)](https://huggingface.co/spaces/mstepien/Dermatolog-AI-Scan) [![Blog Post](https://img.shields.io/badge/Blog_Post-smart.biz.pl-blue)](https://www.smart.biz.pl/techblog/app-dermatolog-ai-scan) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Model: MedSigLIP](https://img.shields.io/badge/Model-MedSigLIP-green)](https://huggingface.co/google/medsiglip-448)
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-blue)](https://huggingface.co/spaces/mstepien/Dermatolog-AI-Scan) [![Blog](https://img.shields.io/badge/Blog_Post-smart.biz.pl-blue)](https://www.smart.biz.pl/techblog/app-dermatolog-ai-scan) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Model: MedSigLIP](https://img.shields.io/badge/Model-MedSigLIP-green)](https://huggingface.co/google/medsiglip-448)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Alpine.js](https://img.shields.io/badge/Alpine.js-8BC0D0?style=flat&logo=alpine.js&logoColor=white)](https://alpinejs.dev/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
